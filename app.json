@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "NomadWeather",
-    "slug": "NomadWeather",
+    "slug": "nomadweather",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,6 +28,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "05026e6e-c343-439d-b3af-7f52970ffc92"
+      }
+    },
+    "owner": "yooncode"
   }
 }
