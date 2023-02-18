@@ -1,14 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Dimensions, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Dimensions,
+  ActivityIndicator,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import * as Location from "expo-location";
+import { Fontisto } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+const API_KEY = "784ab24ff2ed5d94d4288abed9e25d13";
+
+const icons = {
+  Clouds: "cloudy",
+  Clear: "day-sunny",
+  Atmosphere: "cloudy-gusts",
+  Snow: "snow",
+  Rain: "rains",
+  Drizzle: "rain",
+  Thunderstorm: "lightning",
+};
+
 export default function App() {
   const [street, setStreet] = useState("Loading...");
-  const [location, setLocation] = useState();
+  const [days, setDays] = useState([]);
   const [ok, setOk] = useState(true);
-  const ask = async () => {
+  const getWeather = async () => {
     const { granted } = await Location.requestForegroundPermissionsAsync();
     if (!granted) {
       setOk(false);
@@ -24,9 +44,14 @@ export default function App() {
       { useGoogleMaps: false }
     );
     setStreet(location[0].street);
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=hourly,minutely,current&appid=${API_KEY}&units=metric`
+    );
+    const json = await response.json();
+    setDays(json.daily);
   };
   useEffect(() => {
-    ask();
+    getWeather();
   }, []);
   return (
     <View style={styles.container}>
@@ -39,22 +64,39 @@ export default function App() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.weather}
       >
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
+        {days.length === 0 ? (
+          <View style={styles.day}>
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        ) : (
+          days.map((day, index) => (
+            <View key={index} style={styles.day}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={styles.temp}>
+                  {parseFloat(day.temp.day).toFixed(1)}
+                </Text>
+                <Fontisto
+                  name={icons[day.weather[0].main]}
+                  size={52}
+                  color="white"
+                />
+              </View>
+              <View style={{ alignItems: "center", width: "100%" }}>
+                <Text style={styles.description}>{day.weather[0].main}</Text>
+                <Text style={styles.description}>
+                  {day.weather[0].description}
+                </Text>
+              </View>
+            </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -72,21 +114,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cityName: {
-    fontSize: 68,
+    fontSize: 58,
     fontWeight: "500",
+    color: "white",
   },
   weather: {},
   day: {
     width: SCREEN_WIDTH,
-    alignItems: "center",
+    alignItems: "flex-start",
+    paddingHorizontal: 20,
   },
   temp: {
     marginTop: 50,
     fontWeight: "600",
-    fontSize: 178,
+    fontSize: 120,
+    color: "white",
   },
   description: {
-    marginTop: -30,
-    fontSize: 60,
+    marginTop: -10,
+    fontSize: 36,
+    color: "white",
+    fontWeight: "400",
   },
 });
